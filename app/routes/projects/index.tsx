@@ -13,13 +13,25 @@ export async function loader({
 }
 
 const ProjectsPage = ({ loaderData }: Route.ComponentProps) => {
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const { projects } = loaderData;
+
+  const categories = [
+    "All",
+    ...new Set(projects.map((project) => project.category)),
+  ];
+
+  const filteredProjects =
+    selectedCategory === "All"
+      ? projects
+      : projects.filter((project) => project.category === selectedCategory);
+
   const [currentPage, setCurrentPage] = useState(1);
   const projectsPerPage = 2;
-  const totalPages = Math.ceil(loaderData.projects.length / projectsPerPage);
+  const totalPages = Math.ceil(filteredProjects.length / projectsPerPage);
   const indexOfLastProject = currentPage * projectsPerPage;
   const indexOfFirstProject = indexOfLastProject - projectsPerPage;
-  const currentProjects = projects.slice(
+  const currentProjects = filteredProjects.slice(
     indexOfFirstProject,
     indexOfLastProject,
   );
@@ -27,6 +39,24 @@ const ProjectsPage = ({ loaderData }: Route.ComponentProps) => {
   return (
     <>
       <h2 className="font-bold text-3xl">Projects</h2>
+      <div className="flex flex-wrap gap-2 mb-8">
+        {categories.map((category) => (
+          <button
+            key={category}
+            className={`px-3 py-1 rounded ${
+              selectedCategory === category
+                ? "bg-blue-600 text-white"
+                : "bg-gray-700 text-gray-200"
+            }`}
+            onClick={() => {
+              setSelectedCategory(category);
+              setCurrentPage(1);
+            }}
+          >
+            {category}
+          </button>
+        ))}
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4 shadow-sm transition-shadow hover:shadow-md">
         {currentProjects.map((project) => (
           <ProjectCard key={project.id} project={project} />
